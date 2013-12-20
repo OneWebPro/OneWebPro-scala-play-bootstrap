@@ -9,7 +9,7 @@ and fixed in future : ).
 
 To use it start scala console and publish it locally:
  ---
- ```scala
+ ```js
 
  play publish-local
 
