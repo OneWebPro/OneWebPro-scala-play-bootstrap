@@ -1,0 +1,18 @@
+@*@@author loki*@
+@(args: Html, role:String, name:String, brand: Option[String], link: Html, responsive: Boolean, menu: Html)
+<nav @args  role="@role">
+<div class="navbar-header">
+	@if(responsive) {
+		<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#@name">
+			<span class="sr-only">Toggle navigation</span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+		</button>
+	}
+	@if(brand.isDefined) {
+		<a class="navbar-brand" href="@link">@brand.get</a>
+	}
+</div>
+		<div class="collapse navbar-collapse" id="@name">@menu</div>
+</nav>

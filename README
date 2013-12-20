@@ -1,0 +1,8 @@
+OneWebPro scala play bootstrap components
+=====================================
+
+Its my collection of bootstrap components and elements for PlayFramework 2.1 and scala slick database.
+Its collection of some twitter bootstrap components, security traits, database DAO components etc.
+
+Some of them are not full tested or not working correctly (like FlashWrapper) but they will be tested
+and fixed in future : ).

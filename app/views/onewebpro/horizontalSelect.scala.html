@@ -1,0 +1,23 @@
+@*@@author loki*@
+@(elements: helper.FieldElements)
+<div class="form-group @elements.args.getOrElse('_class, "") @if(elements.hasErrors) {has-cerror}" id="@elements.args.getOrElse('_id, elements.id + "-input")">
+	<label class="col-sm-3 control-label" for="@elements.id">
+	@if(elements.args.getOrElse('_showLabel, true) == true) {
+		@elements.label
+		@for((cont, arr) <- elements.field.constraints) {
+			@if(cont == play.api.data.validation.Constraints.nonEmpty.name.get) {
+				<span class="text-error">*</span>
+			}
+		}
+	}
+	</label>
+	<div class="col-sm-9">
+		@elements.input
+		@if(!elements.errors.isEmpty) {
+			<span class="help-block">@elements.errors.mkString(", ")</span>
+		}
+		@if(!elements.infos.isEmpty) {
+			<span class="help-block">@elements.infos.mkString(", ")</span>
+		}
+	</div>
+</div>

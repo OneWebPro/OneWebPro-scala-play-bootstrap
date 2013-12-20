@@ -1,0 +1,30 @@
+@*@@author loki*@
+@(elements: helper.FieldElements)
+<div class="form-group @elements.args.getOrElse('_class, "") @if(elements.hasErrors) {has-error}" id="@elements.args.getOrElse('_id, elements.id + "-input")">
+	<label class="col-sm-3 control-label" for="@elements.id">
+	@if(elements.args.getOrElse('_showLabel, true) == true) {
+		@elements.label
+		@for((cont, arr) <- elements.field.constraints) {
+			@if(cont == play.api.data.validation.Constraints.nonEmpty.name.get) {
+				<span class="text-error">*</span>
+			}
+		}
+	}
+	</label>
+	<div class="col-sm-9">
+		@if(elements.args.getOrElse('_showIcon, true) == true && elements.args.getOrElse('_icon, "") != "") {
+			<div class="input-@elements.args.getOrElse('_iconPosition, "prepend")">
+				<span class="add-on"><i class="icon-@elements.args.getOrElse('_icon, "")"></i></span>
+				@elements.input
+			</div>
+		} else {
+			@elements.input
+		}
+		@if(!elements.errors.isEmpty) {
+			<span class="help-block">@elements.errors.mkString(", ")</span>
+		}
+		@if(!elements.infos.isEmpty) {
+			<span class="help-block">@elements.infos.mkString(", ")</span>
+		}
+	</div>
+</div>

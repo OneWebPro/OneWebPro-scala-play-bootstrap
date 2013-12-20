@@ -1,0 +1,14 @@
+@*@@author loki*@
+@(link: Html, content: Html, accordionName:String, name:String, collapse: Boolean)
+<div class="panel-heading">
+	<h4 class="panel-title">
+		<a class="@if(collapse == true){collapsed}" data-toggle="collapse" data-parent="#@accordionName" href="#@name">
+			@link
+		</a>
+	</h4>
+</div>
+<div id="@name" class="panel-collapse @if(collapse == true) {in} else {collapse}">
+	<div class="panel-body">
+	@content
+	</div>
+</div>
