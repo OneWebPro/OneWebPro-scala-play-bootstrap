@@ -8,9 +8,9 @@ Some of them are not full tested or not working correctly (like FlashWrapper) bu
 and fixed in future : ).
 
 To use it start scala console and publish it locally:
-
  ---
- ```
+ ```scala
+
  play publish-local
 
  ```
