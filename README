@@ -6,3 +6,12 @@ Collection contains some twitter bootstrap components, security traits, database
 
 Some of them are not full tested or not working correctly (like FlashWrapper) but they will be tested
 and fixed in future : ).
+
+To use it start scala console and publish it locally:
+
+ ---
+ ```
+ play publish-local
+
+ ```
+
