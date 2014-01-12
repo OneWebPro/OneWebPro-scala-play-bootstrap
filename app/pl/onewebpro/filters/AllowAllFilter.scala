@@ -1,0 +1,13 @@
+package pl.onewebpro.filters
+
+import play.api.mvc.{SimpleResult, RequestHeader, Filter}
+import scala.concurrent.Future
+
+/**
+ * @author loki
+ */
+object AllowAllFilter extends Filter {
+  def apply(next: (RequestHeader) => Future[SimpleResult])(rh: RequestHeader) = {
+    next(rh).map(_.withHeaders("Access-Control-Allow-Origin" -> "*").as("application/json; charset=utf-8"))
+  }
+}

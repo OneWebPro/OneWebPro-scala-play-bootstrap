@@ -6,6 +6,14 @@ import scala.concurrent.Future
 import pl.onewebpro.database.ServiceError
 
 /**
+ * Constants for secure
+ */
+object SecureConstants extends Enumeration {
+  type SecureConstants = Value
+  val Token = Value("XSRF-TOKEN")
+}
+
+/**
  * @author loki
  */
 
@@ -41,7 +49,6 @@ trait SecureParams {
 }
 
 trait SecureInfo {
-
   /**
    * Application key stored in session
    */
@@ -141,6 +148,9 @@ trait SecureCSRF extends Secure {
    */
   lazy val AuthCSRFAjaxUser: AuthAjaxUserCSRF[UserType] = new AuthAjaxUserCSRF(getUserInfo)
 
+
+  def CSRFCookie(value: String)(implicit request: RequestHeader): Cookie = Cookie(SecureConstants.Token.toString, manager.hash(value), httpOnly = false)
+
 }
 
 /**
@@ -207,7 +217,7 @@ class AuthUser[UserType](function: (Request[_]) => Either[ServiceError, UserType
 class AuthCSRF(implicit secure: Secure, manager: CSRFManager) extends Auth {
   override protected def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[SimpleResult]): Future[SimpleResult] = {
     secure.userInfo(request).map(user => {
-      if (request.headers.get("X-XSRF-TOKEN") == Some(manager.hash(user))) {
+      if (request.headers.get(SecureConstants.Token.toString) == Some(manager.hash(user))) {
         block(new AuthenticatedRequest(user, request))
       } else {
         Future.successful(secure.onUnauthorized(request))
@@ -222,7 +232,7 @@ class AuthUserCSRF[UserType](function: (Request[_]) => Either[ServiceError, User
       case Left(ko) => Future.successful(secure.onUnauthorized(request).flashing("error" -> ko.error))
       case Right(ok) =>
         secure.userInfo(request).map(user => {
-          if (request.headers.get("X-XSRF-TOKEN") == Some(manager.hash(user))) {
+          if (request.headers.get(SecureConstants.Token.toString) == Some(manager.hash(user))) {
             block(new UserRequest(UserType(ok), request))
           } else {
             Future.successful(secure.onUnauthorized(request))
