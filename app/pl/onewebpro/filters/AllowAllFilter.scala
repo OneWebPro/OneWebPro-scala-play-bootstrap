@@ -2,6 +2,7 @@ package pl.onewebpro.filters
 
 import play.api.mvc.{SimpleResult, RequestHeader, Filter}
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * @author loki
