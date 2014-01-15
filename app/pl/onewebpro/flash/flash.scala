@@ -8,6 +8,8 @@ import scalaz.Value
  */
 
 case object FlashType extends Enumeration {
+  type FlashType = Value
+
   val Danger = Value("danger")
   val Warning = Value("warning")
   val Info = Value("info")
@@ -132,6 +134,8 @@ case object FlashWrapper {
   implicit def wf(f: Flash): WrapperFlash = WrapperFlash(f)
 
   implicit def rw(request: RequestHeader): WrapperFlash = WrapperFlash(request.flash)
+
+  implicit def value(f: Value): FlashType.Value = f.asInstanceOf[FlashType.Value]
 
   implicit def fValue(f: FlashType.Value): String = f.toString
 

@@ -11,6 +11,7 @@ import org.imgscalr.Scalr.Method
 import org.imgscalr.Scalr.Mode
 import org.imgscalr.Scalr.Rotation
 import scala.concurrent.{ExecutionContext, Future}
+import scala.io.{Codec, Source}
 
 /**
  * @author loki
@@ -43,6 +44,10 @@ class Image(imageFile: File, defaultMime: List[String] = List("image/jpeg", "ima
   }
 
   def getFormatName: String = imageFile.getName.split('.').takeRight(1).headOption.get
+
+  def toBytes()(implicit codec: Codec = Codec.ISO8859): Array[Byte] = Source.fromFile(imageFile).map(_.toByte).toArray
+
+  //* Scalr methods *//
 
   def resize(targetWidth: Int, targetHeight: Int,
              scalingMethod: Method = Method.AUTOMATIC,
