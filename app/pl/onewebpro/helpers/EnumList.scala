@@ -1,6 +1,5 @@
 package pl.onewebpro.helpers
 
-import scala.collection.immutable.SortedSet
 import scala.Enumeration
 
 /**
