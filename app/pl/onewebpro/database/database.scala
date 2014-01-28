@@ -2,6 +2,8 @@ package pl.onewebpro.database
 
 import play.api.db.slick.DB
 import scala.slick.session.Session
+import scala.slick.jdbc.JdbcBackend.Database.dynamicSession
+import play.api.db.DB
 import play.api.db.slick.Config.driver.simple._
 import play.api.Play.current
 
@@ -26,8 +28,8 @@ trait ErrorService {
 	 * @tparam T
 	 * @return
 	 */
-	def withError[T](block: (scala.slick.session.Session) => T): Either[ServiceError, T] = DB.withSession {
-		implicit s: scala.slick.session.Session =>
+	def withError[T](block: (Session) => T): Either[ServiceError, T] = DB.withSession {
+		implicit s: Session =>
 			try {
 				Right(block(s))
 			} catch {
@@ -41,8 +43,8 @@ trait ErrorService {
 	 * @tparam T
 	 * @return
 	 */
-	def withErrorTransaction[T](block: (scala.slick.session.Session) => T): Either[ServiceError, T] = DB.withTransaction {
-		implicit s: scala.slick.session.Session =>
+	def withErrorTransaction[T](block: (Session) => T): Either[ServiceError, T] = DB.withTransaction {
+		implicit s: Session =>
 			try {
 				Right(block(s))
 			} catch {
@@ -56,8 +58,8 @@ trait ErrorService {
 	 * @tparam T
 	 * @return
 	 */
-	def withSession[T](block: (scala.slick.session.Session) => T): T = DB.withSession {
-		implicit s: scala.slick.session.Session =>
+	def withSession[T](block: (Session) => T): T = DB.withSession {
+		implicit s: Session =>
 			block(s)
 	}
 
@@ -67,8 +69,8 @@ trait ErrorService {
 	 * @tparam T
 	 * @return
 	 */
-	def withTransaction[T](block: (scala.slick.session.Session) => T): T = DB.withTransaction {
-		implicit s: scala.slick.session.Session =>
+	def withTransaction[T](block: (Session) => T): T = DB.withTransaction {
+		implicit s: Session =>
 			block(s)
 	}
 }
