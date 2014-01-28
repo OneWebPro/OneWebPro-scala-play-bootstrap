@@ -7,7 +7,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
  * @author loki
  */
-object AllowAllAjaxFilter {
+object AllowAllAjaxFilter extends Filter{
 	def apply(next: (RequestHeader) => Future[SimpleResult])(rh: RequestHeader) = {
 		next(rh).map(_.withHeaders("Access-Control-Allow-Origin" -> "*").as("application/json; charset=utf-8"))
 	}

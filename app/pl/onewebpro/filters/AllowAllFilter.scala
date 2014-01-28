@@ -7,7 +7,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
  * @author loki
  */
-object AllowAllFilter {
+object AllowAllFilter extends Filter{
 	def apply(next: (RequestHeader) => Future[SimpleResult])(rh: RequestHeader) = {
 		next(rh).map(_.withHeaders("Access-Control-Allow-Origin" -> "*"))
 	}
