@@ -33,20 +33,16 @@ class Collapse(args: Map[Symbol, Any], accords: Vector[AccordionElement], name: 
 	 */
 	private def getAccordArgs: Html = {
 		val arg = args.get('class) match {
-			case Some(_) => {
+			case Some(_) =>
 				args.updated('class, (args.get('class).get.toString + " " + className).trim)
-			}
-			case None => {
+			case None =>
 				args.+(('class, className.trim))
-			}
 		}
 		magic.toHtmlArgs(arg.get('id) match {
-			case Some(_) => {
+			case Some(_) =>
 				args.updated('id, (args.get('id).get.toString + name + "-acc").trim)
-			}
-			case None => {
+			case None =>
 				args.+(('id, name + "-acc".trim))
-			}
 		})
 	}
 
