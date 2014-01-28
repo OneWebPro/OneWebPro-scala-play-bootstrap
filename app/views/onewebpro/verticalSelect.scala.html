@@ -3,9 +3,9 @@
 <div class="form-group @elements.args.getOrElse('_class, "") @if(elements.hasErrors) {has-error}">
 	@if(elements.args.getOrElse('_showLabel, true) == true) {
 		<label class="sr-only" for="@elements.id">
-		@elements.label
-			@for((cont,arr) <- elements.field.constraints){
-				@if(cont == play.api.data.validation.Constraints.nonEmpty.name.get){
+			@elements.label
+			@for((cont, arr) <- elements.field.constraints) {
+				@if(cont == play.api.data.validation.Constraints.nonEmpty.name.get) {
 					<span class="text-error">*</span>
 				}
 			}

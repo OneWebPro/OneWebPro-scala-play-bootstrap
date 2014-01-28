@@ -1,4 +1,9 @@
 @*@@author loki*@
-@(title : String,level : Int = 4)
-<h@level class="thin-title">@title</h@level>
-<hr />
+@(title: String, subText: String = "", level: Int = 4)
+<div class="page-header">
+	<h @level class="thin-title">
+		@title @if(!subText.isEmpty) {
+			<small>@subText</small>
+		}
+	</h@level>
+</div>

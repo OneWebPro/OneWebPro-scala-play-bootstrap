@@ -17,7 +17,7 @@ class Collapse(args: Map[Symbol, Any], accords: Vector[AccordionElement], name: 
 
 	val magic = PlayMagic
 
-	val className : String = "panel-group"
+	val className: String = "panel-group"
 
 	/**
 	 * Render bootstrap accordion element

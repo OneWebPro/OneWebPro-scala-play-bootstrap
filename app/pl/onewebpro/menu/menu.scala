@@ -72,8 +72,8 @@ object MenuPosition extends Enumeration {
  * @param request RequestHeader Implicit request for get actual action and controller
  * @param secure SecureService Implicit secure service
  */
-class Nav(elements: Menu, args: Map[Symbol, Any], name : String, brand: Option[String] = None, link: Html = Html("#"), position: MenuPosition.Value = MenuPosition.StaticTop,
-					role:String ="navigation", inverse: Boolean = false, responsive: Boolean = true, usePackage: Boolean = true)
+class Nav(elements: Menu, args: Map[Symbol, Any], name: String, brand: Option[String] = None, link: Html = Html("#"), position: MenuPosition.Value = MenuPosition.StaticTop,
+					role: String = "navigation", inverse: Boolean = false, responsive: Boolean = true, usePackage: Boolean = true)
 				 (implicit request: RequestHeader, secure: SecureService) {
 
 	val action: String = s.getAction.getOrElse("")

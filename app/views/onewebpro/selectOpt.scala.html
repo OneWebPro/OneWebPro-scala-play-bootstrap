@@ -25,9 +25,9 @@
 		}
 		@options.map { v =>
 			<optgroup label="@v._1">
-				@v._2.map { v =>
-					<option value="@v._1" @if(values.contains(v._1)) {selected}>@v._2 </option>
-				}
+			@v._2.map { v =>
+				<option value="@v._1" @if(values.contains(v._1)) {selected}>@v._2 </option>
+			}
 			</optgroup>
 		}
 		</select>

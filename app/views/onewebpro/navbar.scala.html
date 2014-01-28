@@ -1,7 +1,7 @@
 @*@@author loki*@
-@(elements: pl.onewebpro.menu.Menu, args: Map[Symbol, Any], name : String, brand: Option[String] = None, link: Html = Html("/"), position: pl.onewebpro.menu.MenuPosition.Value = pl.onewebpro.menu.MenuPosition.StaticTop,
-		role:String ="navigation" , inverse: Boolean = false, responsive: Boolean = true, usePackage: Boolean = true)(implicit request: RequestHeader,secure : pl.onewebpro.secure.SecureService)
-    @m = @{
-        new pl.onewebpro.menu.Nav(elements, args, name, brand, link, position, role, inverse, responsive, usePackage)(request,secure).apply
-    }
-    @m
+@(elements: pl.onewebpro.menu.Menu, args: Map[Symbol, Any], name: String, brand: Option[String] = None, link: Html = Html("/"), position: pl.onewebpro.menu.MenuPosition.Value = pl.onewebpro.menu.MenuPosition.StaticTop,
+		role: String = "navigation", inverse: Boolean = false, responsive: Boolean = true, usePackage: Boolean = true)(implicit request: RequestHeader, secure: pl.onewebpro.secure.SecureService)
+	@m = @{
+		new pl.onewebpro.menu.Nav(elements, args, name, brand, link, position, role, inverse, responsive, usePackage)(request, secure).apply
+	}
+@m
