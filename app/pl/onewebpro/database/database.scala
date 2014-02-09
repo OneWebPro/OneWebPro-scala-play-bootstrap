@@ -111,7 +111,7 @@ trait Entity[T <: Entity[T]] {
 /**
  * Table element with implementd some default database actions and fields
  */
-abstract class Mapper[T <: Entity[T]](table: String)(implicit val tag: Tag) extends Table[T](tag, table) {
+abstract class Mapper[T <: Entity[T]](tag: Tag, table: String) extends Table[T](tag, table) {
 
 	val self = TableQuery(tag => this)
 
