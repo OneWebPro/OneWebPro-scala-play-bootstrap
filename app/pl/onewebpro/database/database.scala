@@ -1,9 +1,9 @@
 package pl.onewebpro.database
 
 import play.api.db.slick.DB
-import scala.slick.session.Session
 import play.api.db.slick.Config.driver.simple._
 import play.api.Play.current
+import scala.slick.jdbc.JdbcBackend
 
 /**
  * @author loki
@@ -20,16 +20,16 @@ trait ErrorService {
 	 */
 	type ServiceException = java.lang.Exception
 
+	type Session = JdbcBackend.Session
+
 	/**
 	 * Catch errors in service and inject database session
-	 * @param block
-	 * @tparam T
 	 * @return
 	 */
-	def withError[T](block: (scala.slick.session.Session) => T): Either[ServiceError, T] = DB.withSession {
-		implicit s: scala.slick.session.Session =>
+	def withError[T](f: (Session) => T): Either[ServiceError, T] = DB.withSession {
+		implicit session =>
 			try {
-				Right(block(s))
+				Right(f(session))
 			} catch {
 				case ex: ServiceException => Left(ServiceError(ex.getMessage))
 			}
@@ -37,14 +37,12 @@ trait ErrorService {
 
 	/**
 	 * Catch errors in service and inject database session with transaction
-	 * @param block
-	 * @tparam T
 	 * @return
 	 */
-	def withErrorTransaction[T](block: (scala.slick.session.Session) => T): Either[ServiceError, T] = DB.withTransaction {
-		implicit s: scala.slick.session.Session =>
+	def withErrorTransaction[T](f: (Session) => T): Either[ServiceError, T] = DB.withTransaction {
+		implicit session =>
 			try {
-				Right(block(s))
+				Right(f(session))
 			} catch {
 				case ex: ServiceException => Left(ServiceError(ex.getMessage))
 			}
@@ -52,52 +50,44 @@ trait ErrorService {
 
 	/**
 	 * Inject database session
-	 * @param block
-	 * @tparam T
 	 * @return
 	 */
-	def withSession[T](block: (scala.slick.session.Session) => T): T = DB.withSession {
-		implicit s: scala.slick.session.Session =>
-			block(s)
+	def withSession[T](f: (Session) => T): T = DB.withSession {
+		implicit session =>
+			f(session)
 	}
 
 	/**
 	 * Inject database ssionn with transaction
-	 * @param block
-	 * @tparam T
 	 * @return
 	 */
-	def withTransaction[T](block: (scala.slick.session.Session) => T): T = DB.withTransaction {
-		implicit s: scala.slick.session.Session =>
-			block(s)
+	def withTransaction[T](f: (Session) => T): T = DB.withTransaction {
+		implicit session =>
+			f(session)
 	}
 
 	/**
 	 * Inject database session
-	 * @param block
-	 * @tparam T
 	 * @return
 	 */
-	def withSessionEither[T](block: (scala.slick.session.Session) => Either[ServiceError, T]): Either[ServiceError, T] = DB.withSession {
-		implicit s: scala.slick.session.Session =>
-			block(s)
+	def withSessionEither[T](f: (Session) => Either[ServiceError, T]): Either[ServiceError, T] = DB.withSession {
+		implicit session =>
+			f(session)
 	}
 
 	/**
 	 * Inject database ssionn with transaction
-	 * @param block
-	 * @tparam T
 	 * @return
 	 */
-	def withTransactionEither[T](block: (scala.slick.session.Session) => Either[ServiceError, T]): Either[ServiceError, T] = DB.withTransaction {
-		implicit s: scala.slick.session.Session =>
-			block(s)
+	def withTransactionEither[T](f: (Session) => Either[ServiceError, T]): Either[ServiceError, T] = DB.withTransaction {
+		implicit session =>
+			f(session)
 	}
 }
 
 /**
  * Service error case class
- * @param error
+ * @param error String
  */
 case class ServiceError(error: String)
 
@@ -114,36 +104,53 @@ trait Entity[T <: Entity[T]] {
 	 * @return
 	 */
 	def withId(id: Long): T
+
+	def deactivate: T
 }
 
 /**
  * Table element with implementd some default database actions and fields
- * @param table
- * @tparam T
  */
-abstract class Mapper[T <: Entity[T]](table: String) extends Table[T](None, table) {
+abstract class Mapper[T <: Entity[T]](tag: Tag, table: String) extends Table[T](tag, table) {
+
+	val self = TableQuery(tag => this)
 
 	def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
 
 	def active = column[Boolean]("active")
-
-	def autoInc = * returning id
 
 	/**
 	 * Deleted object from database using id
 	 * @param id Long
 	 * @return
 	 */
-	def delete(id: Long)(implicit s: Session): Boolean = {
-		this.filter(_.id === id).delete > 0
+	def deleteById(id: Long)(implicit s: Session): Boolean = {
+		self.filter(_.id === id).delete > 0
 	}
+
+	def delete(entity: T)(implicit s: Session): Boolean = entity.id match {
+		case Some(id: Long) => deleteById(id)
+		case _ => false
+	}
+
+	/**
+	 * Make element inactive
+	 * @return
+	 */
+	def remove(entity: T)(implicit s: Session): Boolean = !update(entity.deactivate).active
+
+	/**
+	 * Alias for remove
+	 * @return
+	 */
+	def deactivate(entity: T)(implicit s: Session): Boolean = remove(entity)
 
 	/**
 	 * Query returning all elemnts using active field correct
 	 */
-	lazy val findAllQuery = for {
+	lazy val findActiveQuery = for {
 		active <- Parameters[Boolean]
-		e <- this if e.active === active
+		e <- self if e.active === active
 	} yield e
 
 	/**
@@ -151,34 +158,55 @@ abstract class Mapper[T <: Entity[T]](table: String) extends Table[T](None, tabl
 	 * @param active Boolean
 	 * @return
 	 */
-	def findAll(active: Boolean = true)(implicit s: Session): List[T] = {
-		findAllQuery(active).list
+	def findActive(active: Boolean = true)(implicit s: Session): List[T] = {
+		findActiveQuery(active).list
 	}
+
+	def findAll()(implicit s: Session): List[T] = (for {
+		e <- self
+	} yield e).list()
 
 	/**
 	 * Query searching by id field
-	 */
+	 **/
 	lazy val findByIdQuery = for {
 		id <- Parameters[Long]
-		e <- this if e.id === id && e.active === true
+		e <- self if e.id === id
 	} yield e
 
 	/**
-	 * Searching element using id field. Return Option element
+	 * Searching element using id field.Return Option element
 	 * @param id Long
 	 * @return
-	 */
+	 **/
 	def findById(id: Long)(implicit s: Session): Option[T] = {
 		findByIdQuery(id).firstOption
 	}
 
 	/**
-	 * Insert entity element to database and return it. If element hase id defined nothing will happen.
+	 * Query searching by id field and active field
+	 **/
+	lazy val findByIdActiveQuery = for {
+		(id, active) <- Parameters[(Long, Boolean)]
+		e <- self if e.id === id && e.active === active
+	} yield e
+
+	/**
+	 * Searching element using id field.Return Option element
+	 * @param id Long
+	 * @return
+	 **/
+	def findByIdActive(id: Long, active: Boolean = true)(implicit s: Session): Option[T] = {
+		findByIdActiveQuery(id, active).firstOption
+	}
+
+	/**
+	 * Insert entity element to database and return it.If element hase id defined nothing will happen.
 	 * @return
 	 */
 	def insert(entity: T)(implicit s: Session): T = {
 		if (!entity.id.isDefined) {
-			val id = autoInc.insert(entity)
+			val id = self returning self.map(_.id) += entity
 			entity.withId(id)
 		} else {
 			entity
@@ -192,24 +220,24 @@ abstract class Mapper[T <: Entity[T]](table: String) extends Table[T](None, tabl
 	def update(entity: T)(implicit s: Session): T = {
 		entity.id.map {
 			id =>
-				this.filter(_.id === id).update(entity)
+				self.filter(_.id === id).update(entity)
 		}
 		entity
 	}
 
 	/**
-	 * Update & Insert. If hase defined id it will updated if not it will be inserted.
+	 * Update & Insert.If hase defined id it will updated if not it will be inserted.
 	 * @return
 	 */
 	def upinsert(entity: T)(implicit s: Session): T = {
 		entity.id.map {
 			id =>
-				this.filter(_.id === id).update(entity)
-		}
-		if (!entity.id.isDefined) {
-			insert(entity)
-		} else {
-			entity
+				self.filter(_.id === id).update(entity)
+		} match {
+			case Some(id: Int) =>
+				entity.withId(id)
+			case None =>
+				insert(entity)
 		}
 	}
 
@@ -225,19 +253,44 @@ trait DatabaseDAO[Element <: Entity[Element]] {
 	val self: Mapper[Element]
 
 	/**
+	 * Delete element using id
+	 * @param id Long
+	 * @return
+	 */
+	def deleteById(id: Long)(implicit s: Session): Boolean = self.deleteById(id)
+
+	/**
+	 * Deleted object from database
+	 * @return
+	 */
+	def delete(element: Element)(implicit s: Session): Boolean = self.delete(element)
+
+	/**
+	 * Make element inactive
+	 * @return
+	 */
+	def remove(element: Element)(implicit s: Session): Boolean = self.remove(element)
+
+	/**
+	 * Alias for remove
+	 * @return
+	 */
+	def deactivate(element: Element)(implicit s: Session): Boolean = self.deactivate(element)
+
+	/**
 	 * Insert entity element to database and return it. If element had id defined nothing will happen.
 	 * @return
 	 */
 	def insert(element: Element)(implicit session: Session): Element = self.insert(element)
 
 	/**
-	 * Method update entity if hase id
+	 * Method update entity if has id
 	 * @return
 	 */
 	def update(element: Element)(implicit session: Session): Element = self.update(element)
 
 	/**
-	 * Update & Insert. If hase defined id it will updated if not it will be inserted.
+	 * Update & Insert. If has defined id it will updated if not it will be inserted.
 	 * @return
 	 */
 	def upinsert(element: Element)(implicit session: Session): Element = self.upinsert(element)
@@ -250,9 +303,23 @@ trait DatabaseDAO[Element <: Entity[Element]] {
 	def findById(id: Long)(implicit session: Session): Option[Element] = self.findById(id)
 
 	/**
+	 * Searching element using id field and active field
+	 * @param id Long
+	 * @param active Boolean
+	 * @return
+	 */
+	def findByIdActive(id: Long, active: Boolean = true)(implicit session: Session): Option[Element] = self.findByIdActive(id, active)
+
+	/**
 	 * Use findAllQuery. Default is searching if filed approved is true
 	 * @param active Boolean
 	 * @return
 	 */
-	def findAll(active: Boolean = true)(implicit session: Session): List[Element] = self.findAll(active)
+	def findActive(active: Boolean = true)(implicit session: Session): List[Element] = self.findActive(active)
+
+	/**
+	 * Return all elements from database
+	 * @return
+	 */
+	def findAll()(implicit session: Session): List[Element] = self.findAll()
 }

@@ -4,6 +4,7 @@ package pl.onewebpro.secure
 import play.api.mvc._
 import scala.concurrent.Future
 import pl.onewebpro.database.ServiceError
+import pl.onewebpro.secure
 
 /**
  * Constants for secure
@@ -136,7 +137,7 @@ trait Secure extends SecureParams with SecureInfo {
 
 trait SecureCSRF extends Secure {
 
-	implicit val manager: CSRFManager
+	implicit val manager: CSRFManager = DefaultCSRFManager
 
 	/**
 	 * Authorized action for ajax use and check CSRF token
@@ -314,6 +315,20 @@ trait PasswordManager {
  * Manager for CSRF codes
  */
 trait CSRFManager extends PasswordManager
+
+/**
+ * Default CSRF manager
+ */
+object DefaultCSRFManager extends CSRFManager {
+	def hash(password: String): String = secure.MD5.hash(password)
+}
+
+/**
+ * Default password manager
+ */
+object DefaultPasswordManager extends PasswordManager {
+	def hash(password: String): String = secure.MD5.hash(password)
+}
 
 /**
  * Scala implementation od MD5

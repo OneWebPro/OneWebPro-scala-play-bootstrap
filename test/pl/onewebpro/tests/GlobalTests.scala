@@ -1,14 +1,11 @@
 package pl.onewebpro.tests
 
-import org.specs2.mutable._
 import play.api.test._
 import play.api.test.Helpers._
 import play.api.db.slick.DB
-import scala.slick.jdbc.meta.MTable
 import play.api.Play.current
-import play.api.db.slick.Config.driver.simple._
-import scala.slick.session.Session
 import org.specs2.execute.AsResult
+import scala.slick.jdbc.JdbcBackend.Session
 
 
 trait GlobalTests {
