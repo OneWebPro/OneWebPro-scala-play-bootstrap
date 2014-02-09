@@ -8,7 +8,7 @@ package object tables {
 	import pl.onewebpro.database.Mapper
 	import play.api.db.slick.Config.driver.simple._
 
-	case class Test(id: Option[Long], testText: String, active: Boolean) extends Entity[Test] {
+	case class Test(id: Option[Long], testText: String, active: Boolean = true) extends Entity[Test] {
 		def withId(id: Long): Test = copy(id = Some(id))
 
 		def deactivate: Test = copy(active = false)

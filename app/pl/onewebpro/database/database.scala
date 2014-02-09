@@ -124,23 +124,26 @@ abstract class Mapper[T <: Entity[T]](tag: Tag, table: String) extends Table[T](
 	 * @param id Long
 	 * @return
 	 */
-	def delete(id: Long)(implicit s: Session): Boolean = {
+	def deleteById(id: Long)(implicit s: Session): Boolean = {
 		self.filter(_.id === id).delete > 0
+	}
+
+	def delete(entity: T)(implicit s: Session): Boolean = entity.id match {
+		case Some(id: Long) => deleteById(id)
+		case _ => false
 	}
 
 	/**
 	 * Make element inactive
-	 * @param id Long
 	 * @return
 	 */
-	def remove(id: Long)(implicit s: Session): Boolean = !update(findById(id).get.deactivate).active
+	def remove(entity: T)(implicit s: Session): Boolean = !update(entity.deactivate).active
 
 	/**
 	 * Alias for remove
-	 * @param id Long
 	 * @return
 	 */
-	def deactivate(id: Long)(implicit s: Session): Boolean = remove(id)
+	def deactivate(entity: T)(implicit s: Session): Boolean = remove(entity)
 
 	/**
 	 * Query returning all elemnts using active field correct
@@ -248,6 +251,31 @@ trait DatabaseDAO[Element <: Entity[Element]] {
 	 * Element of DAO
 	 */
 	val self: Mapper[Element]
+
+	/**
+	 * Delete element using id
+	 * @param id Long
+	 * @return
+	 */
+	def deleteById(id: Long)(implicit s: Session): Boolean = self.deleteById(id)
+
+	/**
+	 * Deleted object from database
+	 * @return
+	 */
+	def delete(element: Element)(implicit s: Session): Boolean = self.delete(element)
+
+	/**
+	 * Make element inactive
+	 * @return
+	 */
+	def remove(element: Element)(implicit s: Session): Boolean = self.remove(element)
+
+	/**
+	 * Alias for remove
+	 * @return
+	 */
+	def deactivate(element: Element)(implicit s: Session): Boolean = self.deactivate(element)
 
 	/**
 	 * Insert entity element to database and return it. If element had id defined nothing will happen.
