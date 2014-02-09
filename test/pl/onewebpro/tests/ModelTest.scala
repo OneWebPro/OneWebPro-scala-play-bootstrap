@@ -42,11 +42,12 @@ class ModelTest extends Specification with GlobalTests {
 					TestTable.findActive(active = false).size mustEqual 2
 					TestTable.findByIdActive(updatedInactive.id.get,active = false).get mustEqual updatedInactive
 					TestTable.delete(updatedInactive)
-					TestTable.findActive(active = false).size mustEqual 1
+					TestTable.findAll().size mustEqual 1
 					val secondInserted = TestTable.insert(Test(None, "xxx"))
 					TestTable.findActive().size mustEqual 1
 					TestTable.deactivate(secondInserted)
 					TestTable.findActive(active = false).size mustEqual 2
+					TestTable.findAll().size mustEqual 2
 			}
 		}
 	}
