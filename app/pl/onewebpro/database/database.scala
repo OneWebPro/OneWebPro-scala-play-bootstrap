@@ -4,6 +4,7 @@ import play.api.db.slick.DB
 import play.api.db.slick.Config.driver.simple._
 import play.api.Play.current
 import scala.slick.jdbc.JdbcBackend
+import scalaz.{Success, Failure, Validation}
 
 /**
  * @author loki
@@ -83,6 +84,23 @@ trait ErrorService {
 		implicit session =>
 			f(session)
 	}
+
+	def withValidation[T](f: (Session) => Validation[ServiceError, T]): Either[ServiceError, T] = DB.withSession {
+		implicit session =>
+			f(session) match {
+				case Failure(error) => Left(error)
+				case Success(ok) => Right(ok)
+			}
+	}
+
+	def withTransactionValidation[T](f: (Session) => Validation[ServiceError, T]): Either[ServiceError, T] = DB.withTransaction {
+		implicit session =>
+			f(session) match {
+				case Failure(error) => Left(error)
+				case Success(ok) => Right(ok)
+			}
+	}
+
 }
 
 /**
