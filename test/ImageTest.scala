@@ -1,6 +1,6 @@
 import java.io.File
 import org.specs2.mutable.Specification
-import pl.onewebpro.image.Image
+import pl.onewebpro.image.{ImageResize, Image}
 
 /**
  * @author loki
@@ -16,13 +16,11 @@ class ImageTest extends Specification {
 
 	"Image" should {
 		"have good mime and be image" in {
-			val image:Image = new Image(imageFile)
+			val image: Image = new Image(imageFile)
 			image.isImage mustEqual true
 			image.getExtensionName mustEqual "jpg"
 			image.getFileMime.get mustEqual "image/jpeg"
 		}
 	}
-
-
 
 }
