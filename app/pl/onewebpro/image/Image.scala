@@ -43,6 +43,12 @@ class Image(imageFile: File, defaultMime: List[String] = List("image/jpeg", "ima
 		new Image(file, mimeTypes)
 	}
 
+	def remove: Boolean = getFile.delete()
+
+	def width: Float = image.getWidth
+
+	def height: Float = image.getHeight
+
 	def getExtension: Option[String] = imageFile.getName.split('.').takeRight(1).headOption
 
 	def getExtensionName: String = getExtension.get
