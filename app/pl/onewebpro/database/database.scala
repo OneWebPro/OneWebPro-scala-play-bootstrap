@@ -106,6 +106,21 @@ trait Entity[T <: Entity[T]] {
 	def withId(id: Long): T
 
 	def deactivate: T
+
+	/**
+	 * Events
+	 */
+	def beforeInsert(): Unit = {}
+
+	def beforeUpdate(): Unit = {}
+
+	def beforeDelete(): Unit = {}
+
+	def afterInsert(): Unit = {}
+
+	def afterUpdate(): Unit = {}
+
+	def afterDelete(deleted: Boolean): Unit = {}
 }
 
 /**
@@ -263,7 +278,12 @@ trait DatabaseDAO[Element <: Entity[Element]] {
 	 * Deleted object from database
 	 * @return
 	 */
-	def delete(element: Element)(implicit s: Session): Boolean = self.delete(element)
+	def delete(element: Element)(implicit s: Session): Boolean = {
+		element.beforeDelete()
+		val deleted = self.delete(element)
+		element.afterDelete(deleted)
+		deleted
+	}
 
 	/**
 	 * Make element inactive
@@ -281,13 +301,23 @@ trait DatabaseDAO[Element <: Entity[Element]] {
 	 * Insert entity element to database and return it. If element had id defined nothing will happen.
 	 * @return
 	 */
-	def insert(element: Element)(implicit session: Session): Element = self.insert(element)
+	def insert(element: Element)(implicit session: Session): Element = {
+		element.beforeInsert()
+		val inserted = self.insert(element)
+		element.afterInsert()
+		inserted
+	}
 
 	/**
 	 * Method update entity if has id
 	 * @return
 	 */
-	def update(element: Element)(implicit session: Session): Element = self.update(element)
+	def update(element: Element)(implicit session: Session): Element = {
+		element.beforeUpdate()
+		val updated = self.update(element)
+		element.afterUpdate()
+		updated
+	}
 
 	/**
 	 * Update & Insert. If has defined id it will updated if not it will be inserted.
