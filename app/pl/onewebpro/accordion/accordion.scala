@@ -20,7 +20,7 @@ class Collapse(args: Map[Symbol, Any], accords: Vector[AccordionElement], name: 
 	val className: String = "panel-group"
 
 	/**
-	 * Render bootstrap accordion element
+	 * Render forms accordion element
 	 * @return
 	 */
 	def apply: Html = {

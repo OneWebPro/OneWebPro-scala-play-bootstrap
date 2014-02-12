@@ -25,28 +25,28 @@ case object BootstrapFlash {
 
 trait FlashInterface {
 	/**
-	 * Method for displaying danger message used with bootstrap.messages view.
+	 * Method for displaying danger message used with forms.messages view.
 	 * @param value String
 	 * @return Flash
 	 */
 	def danger(value: String): Flash
 
 	/**
-	 * Method for displaying warning used with bootstrap.messages view.
+	 * Method for displaying warning used with forms.messages view.
 	 * @param value String
 	 * @return Flash
 	 */
 	def warning(value: String): Flash
 
 	/**
-	 * Method for displaying information message used with bootstrap.messages view.
+	 * Method for displaying information message used with forms.messages view.
 	 * @param value String
 	 * @return Flash
 	 */
 	def info(value: String): Flash
 
 	/**
-	 * Method for displaying success message used with bootstrap.messages view.
+	 * Method for displaying success message used with forms.messages view.
 	 * @param value String
 	 * @return Flash
 	 */
@@ -69,7 +69,7 @@ trait FlashInterface {
 case class WrapperFlash(f: Flash) extends FlashInterface {
 
 	/**
-	 * Method for displaying danger message used with bootstrap.messages view.
+	 * Method for displaying danger message used with forms.messages view.
 	 * @param value String
 	 * @return Flash
 	 */
@@ -78,39 +78,37 @@ case class WrapperFlash(f: Flash) extends FlashInterface {
 	}
 
 	/**
-	 * Method for displaying warning used with bootstrap.messages view.
+	 * Method for displaying warning used with forms.messages view.
 	 * @param value String
 	 * @return Flash
 	 */
 	def warning(value: String): Flash = {
-		f.+(BootstrapFlash.Warning, value)
+		f.+(BootstrapFlash.Warning -> value)
 	}
 
 	/**
-	 * Method for displaying information message used with bootstrap.messages view.
+	 * Method for displaying information message used with forms.messages view.
 	 * @param value String
 	 * @return Flash
 	 */
 	def info(value: String): Flash = {
-		f.+(BootstrapFlash.Info, value)
+		f.+(BootstrapFlash.Info -> value)
 	}
 
 	/**
-	 * Method for displaying success message used with bootstrap.messages view.
+	 * Method for displaying success message used with forms.messages view.
 	 * @param value String
 	 * @return Flash
 	 */
 	def success(value: String): Flash = {
-		f.+(BootstrapFlash.Success, value)
+		f.+(BootstrapFlash.Success -> value)
 	}
 
 	/**
 	 * Method returns all keys and values from flash
 	 * @return
 	 */
-	def all: Map[String, String] = {
-		f.data
-	}
+	def all: Map[String, String] = f.data
 
 	/**
 	 * Method return which type of key is this key
@@ -124,11 +122,9 @@ case class WrapperFlash(f: Flash) extends FlashInterface {
 	 * @param value String
 	 * @return
 	 */
-	def isNone(value: String): Boolean = {
-		getType(value) match {
-			case FlashType.None => true
-			case _ => false
-		}
+	def isNone(value: String): Boolean = getType(value) match {
+		case FlashType.None => true
+		case _ => false
 	}
 
 }
@@ -143,14 +139,12 @@ case object FlashWrapper {
 
 	implicit def fValue(f: FlashType.Value): String = f.toString
 
-	implicit def fType(f: String): FlashType.Value = {
-		f match {
-			case "danger" => FlashType.Danger
-			case "warning" => FlashType.Warning
-			case "info" => FlashType.Info
-			case "success" => FlashType.Success
-			case _ => FlashType.None
-		}
+	implicit def fType(f: String): FlashType.Value = f match {
+		case "danger" => FlashType.Danger
+		case "warning" => FlashType.Warning
+		case "info" => FlashType.Info
+		case "success" => FlashType.Success
+		case _ => FlashType.None
 	}
 }
 
@@ -159,28 +153,28 @@ case object FlashMessage {
 	import FlashWrapper._
 
 	/**
-	 * Method for displaying danger message used with bootstrap.messages view.
+	 * Method for displaying danger message used with forms.messages view.
 	 * @param value String
 	 * @return Flash
 	 */
 	def danger(value: String)(implicit request: RequestHeader): Flash = request.danger(value)
 
 	/**
-	 * Method for displaying warning used with bootstrap.messages view.
+	 * Method for displaying warning used with forms.messages view.
 	 * @param value String
 	 * @return Flash
 	 */
 	def warning(value: String)(implicit request: RequestHeader): Flash = request.warning(value)
 
 	/**
-	 * Method for displaying information message used with bootstrap.messages view.
+	 * Method for displaying information message used with forms.messages view.
 	 * @param value String
 	 * @return Flash
 	 */
 	def info(value: String)(implicit request: RequestHeader): Flash = request.info(value)
 
 	/**
-	 * Method for displaying success message used with bootstrap.messages view.
+	 * Method for displaying success message used with forms.messages view.
 	 * @param value String
 	 * @return Flash
 	 */

@@ -5,6 +5,7 @@ import play.api.mvc._
 import scala.concurrent.Future
 import pl.onewebpro.database.ServiceError
 import pl.onewebpro.secure
+import org.mindrot.jbcrypt.BCrypt
 
 /**
  * Constants for secure
@@ -309,6 +310,8 @@ object SecureService extends SecureService with SecureInfo {
  */
 trait PasswordManager {
 	def hash(password: String): String
+
+	def isValid(password: String, hash: String): Boolean
 }
 
 /**
@@ -320,14 +323,18 @@ trait CSRFManager extends PasswordManager
  * Default CSRF manager
  */
 object DefaultCSRFManager extends CSRFManager {
-	def hash(password: String): String = secure.MD5.hash(password)
+	def hash(value: String): String = secure.MD5.hash(value)
+
+	def isValid(value: String, hash: String): Boolean = secure.MD5.hash(value) == secure.MD5.hash(hash)
 }
 
 /**
  * Default password manager
  */
 object DefaultPasswordManager extends PasswordManager {
-	def hash(password: String): String = secure.MD5.hash(password)
+	def hash(password: String): String = BCrypt.hashpw(password, BCrypt.gensalt())
+
+	def isValid(password: String, hash: String): Boolean = BCrypt.checkpw(password, hash)
 }
 
 /**

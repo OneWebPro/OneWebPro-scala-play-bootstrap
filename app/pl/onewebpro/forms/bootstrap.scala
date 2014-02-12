@@ -1,4 +1,4 @@
-package pl.onewebpro.bootstrap
+package pl.onewebpro.forms
 
 import views.html.helper.FieldConstructor
 
