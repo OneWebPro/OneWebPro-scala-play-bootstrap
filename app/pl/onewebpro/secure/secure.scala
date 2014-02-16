@@ -334,7 +334,7 @@ object DefaultCSRFManager extends CSRFManager {
 object DefaultPasswordManager extends PasswordManager {
 	def hash(password: String): String = BCrypt.hashpw(password, BCrypt.gensalt())
 
-	def isValid(password: String, hash: String): Boolean = BCrypt.hashpw(password, hash) == hash
+	def isValid(password: String, hash: String): Boolean = BCrypt.checkpw(password, hash)
 }
 
 /**
