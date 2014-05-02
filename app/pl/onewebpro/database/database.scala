@@ -5,10 +5,34 @@ import play.api.db.slick.Config.driver.simple._
 import play.api.Play.current
 import scala.slick.jdbc.JdbcBackend
 import scalaz.{Success, Failure, Validation}
+import scala.slick.lifted.CanBeQueryCondition
 
 /**
  * @author loki
  */
+
+/**
+ * Class for filtering data in slick
+ */
+case class MaybeFilter[X, Y](query: scala.slick.lifted.Query[X, Y]) {
+	def filter[T](data: Option[T])(f: T => X => scala.slick.lifted.Column[Boolean]) = {
+		data.map(v => MaybeFilter(query.filter(f(v)))).getOrElse(this)
+	}
+
+	def filterIf[T](ifWhat: T)(data: T)(f: T => X => scala.slick.lifted.Column[Boolean]) = {
+		if (ifWhat == data) {
+			query.filter(f(data))
+		}
+		this
+	}
+
+	def filterIfNot[T](ifWhat: T)(data: T)(f: T => X => scala.slick.lifted.Column[Boolean]) = {
+		if (ifWhat != data) {
+			query.filter(f(data))
+		}
+		this
+	}
+}
 
 /**
  * Service object trait
