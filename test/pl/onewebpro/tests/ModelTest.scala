@@ -6,6 +6,7 @@ import scala.slick.jdbc.meta.MTable
 import dao._
 import tables._
 import services.TestService
+import pl.onewebpro.database.MaybeFilter
 
 /**
  * @author loki
@@ -52,9 +53,6 @@ class ModelTest extends Specification with GlobalTests {
 					TestTable.findAll().size mustEqual 2
 			}
 		}
-	}
-
-	"TestService " should {
 		"working with 3 types of errors" in {
 			runSession {
 				implicit session =>
@@ -66,6 +64,31 @@ class ModelTest extends Specification with GlobalTests {
 					TestService.findAllWithError().isLeft mustEqual false
 					TestService.findAllWithEither().isLeft mustEqual false
 					TestService.findAllWithValidation().isLeft mustEqual false
+			}
+		}
+	}
+
+	"MaybeFilters" should {
+		"work with all types" in {
+			runSession {
+				implicit session =>
+					ddl.create
+					TestTable.insert(Test(None, "xxx"))
+					MaybeFilter(DDL.TestTable)
+						.filterIfNot("a")("b")(v => d => d.active === true)
+						.filterIfIs("a")("a")(v => d => d.active === true)
+						.filterIf("a")(a => a == "a")(v => d => d.active === true)
+					.query.list().size mustEqual 1
+					MaybeFilter(DDL.TestTable)
+						.filterIfNot("a")("a")(v => d => d.active =!= true)
+						.filterIfIs("a")("b")(v => d => d.active =!= true)
+						.filterIf("a")(a => a != "a")(v => d => d.active =!= true)
+						.query.list().size mustEqual 1
+					MaybeFilter(DDL.TestTable)
+						.filterIfNot("a")("b")(v => d => d.active =!= true)
+						.filterIfIs("a")("a")(v => d => d.active =!= true)
+						.filterIf("a")(a => a == "a")(v => d => d.active =!= true)
+						.query.list().size mustEqual 0
 			}
 		}
 	}

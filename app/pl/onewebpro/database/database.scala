@@ -21,23 +21,26 @@ case class MaybeFilter[X, Y](query: scala.slick.lifted.Query[X, Y]) {
 
 	def filterIf[T, R: CanBeQueryCondition](data: T)(is: T => Boolean)(f: T => X => R) = {
 		if (is(data)) {
-			query.filter(f(data))
+			MaybeFilter(query.filter(f(data)))
+		} else {
+			this
 		}
-		this
 	}
 
 	def filterIfIs[T, R: CanBeQueryCondition](data: T)(ifWhat: T)(f: T => X => R) = {
 		if (ifWhat == data) {
-			query.filter(f(data))
+			MaybeFilter(query.filter(f(data)))
+		} else {
+			this
 		}
-		this
 	}
 
 	def filterIfNot[T, R: CanBeQueryCondition](data: T)(ifWhat: T)(f: T => X => R) = {
 		if (ifWhat != data) {
-			query.filter(f(data))
+			MaybeFilter(query.filter(f(data)))
+		} else {
+			this
 		}
-		this
 	}
 }
 
