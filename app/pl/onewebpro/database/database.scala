@@ -15,18 +15,18 @@ import scala.slick.lifted.CanBeQueryCondition
  * Class for filtering data in slick
  */
 case class MaybeFilter[X, Y](query: scala.slick.lifted.Query[X, Y]) {
-	def filter[T](data: Option[T])(f: T => X => scala.slick.lifted.Column[Boolean]) = {
+	def filter[T, R: CanBeQueryCondition](data: Option[T])(f: T => X => R) = {
 		data.map(v => MaybeFilter(query.filter(f(v)))).getOrElse(this)
 	}
 
-	def filterIf[T](ifWhat: T)(data: T)(f: T => X => scala.slick.lifted.Column[Boolean]) = {
+	def filterIf[T, R: CanBeQueryCondition](ifWhat: T)(data: T)(f: T => X => R) = {
 		if (ifWhat == data) {
 			query.filter(f(data))
 		}
 		this
 	}
 
-	def filterIfNot[T](ifWhat: T)(data: T)(f: T => X => scala.slick.lifted.Column[Boolean]) = {
+	def filterIfNot[T, R: CanBeQueryCondition](ifWhat: T)(data: T)(f: T => X => R) = {
 		if (ifWhat != data) {
 			query.filter(f(data))
 		}
