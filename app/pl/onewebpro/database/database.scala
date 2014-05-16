@@ -9,9 +9,7 @@ import scala.slick.lifted.CanBeQueryCondition
 import play.mvc.Http.Status
 import play.api.mvc.{SimpleResult, Results}
 import play.api.http.Status._
-import pl.onewebpro.database.MaybeFilter
 import scalaz.Failure
-import pl.onewebpro.database.ServiceError
 import scala.Some
 import scalaz.Success
 import play.api.libs.json.Json
