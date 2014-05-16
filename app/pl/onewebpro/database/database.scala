@@ -6,17 +6,27 @@ import play.api.Play.current
 import scala.slick.jdbc.JdbcBackend
 import scalaz.{Success, Failure, Validation}
 import scala.slick.lifted.CanBeQueryCondition
+import play.mvc.Http.Status
+import play.api.mvc.{SimpleResult, Results}
+import play.api.http.Status._
+import pl.onewebpro.database.MaybeFilter
+import scalaz.Failure
+import pl.onewebpro.database.ServiceError
+import scala.Some
+import scalaz.Success
+import play.api.libs.json.Json
+import scala.concurrent.Future
 
 /**
  * @author loki
  */
 
 /**
- * Class for filtering data in slick
+ * Class for filtering data in slick.
  */
 case class MaybeFilter[X, Y](query: scala.slick.lifted.Query[X, Y]) {
 	def filter[T, R: CanBeQueryCondition](data: Option[T])(f: T => X => R) = {
-		data.map(v => MaybeFilter(query.filter(f(v)))).getOrElse(this)
+		data.fold(this)(v => MaybeFilter(query.filter(f(v))))
 	}
 
 	def filterIf[T, R: CanBeQueryCondition](data: T)(is: T => Boolean)(f: T => X => R) = {
@@ -141,7 +151,15 @@ trait ErrorService {
  * Service error case class
  * @param error String
  */
-case class ServiceError(error: String)
+case class ServiceError(error: String, code: Int = UNPROCESSABLE_ENTITY) {
+	def toJsonResult: SimpleResult = new Results.Status(code).apply(
+		Json.obj(
+			"error" -> error
+		)
+	)
+
+	def toFutureJsonResult: Future[SimpleResult] = Future.successful(toJsonResult)
+}
 
 /**
  * Global table element

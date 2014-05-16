@@ -201,9 +201,9 @@ case class Ajax[A](action: Action[A])(implicit secure: Secure) extends Action[A]
  */
 class Auth(implicit secure: Secure) extends ActionBuilder[AuthenticatedRequest] {
 	protected def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[SimpleResult]): Future[SimpleResult] = {
-		secure.userInfo(request).map(user => {
+		secure.userInfo(request).fold(Future.successful(secure.onUnauthorized(request)))(user => {
 			block(new AuthenticatedRequest(user, request))
-		}).getOrElse(Future.successful(secure.onUnauthorized(request)))
+		})
 	}
 }
 
@@ -218,13 +218,13 @@ class AuthUser[UserType](function: (Request[_]) => Either[ServiceError, UserType
 
 class AuthCSRF(implicit secure: Secure, manager: CSRFManager) extends Auth {
 	override protected def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[SimpleResult]): Future[SimpleResult] = {
-		secure.userInfo(request).map(user => {
+		secure.userInfo(request).fold(Future.successful(secure.onUnauthorized(request)))(user => {
 			if (request.headers.get(SecureConstants.Token.toString) == Some(manager.hash(user))) {
 				block(new AuthenticatedRequest(user, request))
 			} else {
 				Future.successful(secure.onUnauthorized(request))
 			}
-		}).getOrElse(Future.successful(secure.onUnauthorized(request)))
+		})
 	}
 }
 
@@ -233,13 +233,13 @@ class AuthUserCSRF[UserType](function: (Request[_]) => Either[ServiceError, User
 		function.apply(request) match {
 			case Left(ko) => Future.successful(secure.onUnauthorized(request).flashing("error" -> ko.error))
 			case Right(ok) =>
-				secure.userInfo(request).map(user => {
+				secure.userInfo(request).fold(Future.successful(secure.onUnauthorized(request)))(user => {
 					if (request.headers.get(SecureConstants.Token.toString) == Some(manager.hash(user))) {
 						block(new UserRequest(UserType(ok), request))
 					} else {
 						Future.successful(secure.onUnauthorized(request))
 					}
-				}).getOrElse(Future.successful(secure.onUnauthorized(request)))
+				})
 		}
 	}
 }
