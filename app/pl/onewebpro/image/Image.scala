@@ -12,6 +12,7 @@ import org.imgscalr.Scalr.Mode
 import org.imgscalr.Scalr.Rotation
 import scala.concurrent.{ExecutionContext, Future}
 import scala.io.{Codec, Source}
+import net.coobird.thumbnailator.Thumbnails
 
 /**
  * @author loki
@@ -57,23 +58,19 @@ class Image(imageFile: File, defaultMime: List[String] = List("image/jpeg", "ima
 
 	//* Scalr methods *//
 
-	def resize(targetWidth: Int, targetHeight: Int,
-						 scalingMethod: Method = Method.AUTOMATIC,
-						 resizeMode: Mode = Mode.AUTOMATIC): Image = {
-		ImageIO.write(Scalr.resize(image, scalingMethod, resizeMode, targetWidth, targetHeight), getExtensionName, imageFile)
+	def resize(targetWidth: Int, targetHeight: Int, quality: Double): Image = {
+		Thumbnails.of(imageFile).size(targetWidth, targetHeight).outputQuality(quality).toFile(imageFile)
 		new Image(imageFile, mimeTypes)
 	}
 
-	def resize(img: ImageResize): Image = resize(img.targetWidth, img.targetHeight, img.scalingMethod, img.resizeMode)
+	def resize(img: ImageResize): Image = resize(img.targetWidth, img.targetHeight, img.quality)
 
-	def resizeAsync(targetWidth: Int, targetHeight: Int,
-									scalingMethod: Method = Method.AUTOMATIC,
-									resizeMode: Mode = Mode.AUTOMATIC)(implicit ctx: ExecutionContext): Future[Image] = Future.apply {
-		ImageIO.write(AsyncScalr.resize(image, scalingMethod, resizeMode, targetWidth, targetHeight).get(), getExtensionName, imageFile)
+	def resizeAsync(targetWidth: Int, targetHeight: Int,quality: Double)(implicit ctx: ExecutionContext): Future[Image] = Future.apply {
+		Thumbnails.of(imageFile).size(targetWidth, targetHeight).outputQuality(quality).toFile(imageFile)
 		new Image(imageFile, defaultMime)
 	}
 
-	def resizeAsync(img: ImageResize)(implicit ctx: ExecutionContext): Future[Image] = resizeAsync(img.targetWidth, img.targetHeight, img.scalingMethod, img.resizeMode)
+	def resizeAsync(img: ImageResize)(implicit ctx: ExecutionContext): Future[Image] = resizeAsync(img.targetWidth, img.targetHeight, img.quality)
 
 	def crop(x: Int, y: Int, width: Int, height: Int): Image = {
 		ImageIO.write(Scalr.crop(image, x, y, width, height), getExtensionName, imageFile)
@@ -122,7 +119,7 @@ class Image(imageFile: File, defaultMime: List[String] = List("image/jpeg", "ima
 	if (!isImage) throw new Exception("File" + imageFile.getName + "is not image compatible with mime types.")
 }
 
-case class ImageResize(targetWidth: Int, targetHeight: Int, scalingMethod: Method = Method.AUTOMATIC, resizeMode: Mode = Mode.AUTOMATIC)
+case class ImageResize(targetWidth: Int, targetHeight: Int, quality: Double = 1.0)
 
 case class ImageCrop(x: Int, y: Int, width: Int, height: Int)
 
