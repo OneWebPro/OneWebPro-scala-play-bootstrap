@@ -349,7 +349,7 @@ trait DatabaseDAO[Element <: Entity[Element]] {
 	def delete(element: Element)(implicit s: Session): Boolean = {
 		element.beforeDelete()
 		val deleted = self.delete(element)
-    deleted.afterDelete(deleted)
+    element.afterDelete(deleted)
 		deleted
 	}
 
