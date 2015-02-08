@@ -4,7 +4,7 @@ import Keys._
 object ApplicationBuild extends Build {
 
 	val appName = "OneWebPro-scala-play-bootstrap"
-	val appVersion = "1.0.41"
+	val appVersion = "1.0.42"
 
 	val appDependencies = Seq(
 		"com.typesafe.slick" %% "slick" % "2.0.1",

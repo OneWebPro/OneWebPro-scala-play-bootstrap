@@ -349,7 +349,7 @@ trait DatabaseDAO[Element <: Entity[Element]] {
 	def delete(element: Element)(implicit s: Session): Boolean = {
 		element.beforeDelete()
 		val deleted = self.delete(element)
-		element.afterDelete(deleted)
+    deleted.afterDelete(deleted)
 		deleted
 	}
 
@@ -372,7 +372,7 @@ trait DatabaseDAO[Element <: Entity[Element]] {
 	def insert(element: Element)(implicit session: Session): Element = {
 		element.beforeInsert()
 		val inserted = self.insert(element)
-		element.afterInsert()
+    inserted.afterInsert()
 		inserted
 	}
 
@@ -383,7 +383,7 @@ trait DatabaseDAO[Element <: Entity[Element]] {
 	def update(element: Element)(implicit session: Session): Element = {
 		element.beforeUpdate()
 		val updated = self.update(element)
-		element.afterUpdate()
+    updated.afterUpdate()
 		updated
 	}
 
