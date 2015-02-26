@@ -25,28 +25,28 @@ trait SecureParams {
 	 * @param request play.api.mvc.RequestHeader
 	 * @return
 	 */
-	def onUnauthorized(request: RequestHeader): SimpleResult
+	def onUnauthorized(request: RequestHeader): Result
 
 	/**
 	 * Redirect to index and show flash message
 	 * @param request play.api.mvc.RequestHeader
 	 * @return
 	 */
-	def notOnUnauthorized(request: RequestHeader): SimpleResult
+	def notOnUnauthorized(request: RequestHeader): Result
 
 	/**
 	 * Redirect to index and show flash message
 	 * @param request play.api.mvc.RequestHeader
 	 * @return
 	 */
-	def notPermissions(request: RequestHeader): SimpleResult
+	def notPermissions(request: RequestHeader): Result
 
 	/**
 	 * Bad request action
 	 * @param request play.api.mvc.RequestHeader
 	 * @return
 	 */
-	def badRequest(request: RequestHeader): SimpleResult
+	def badRequest(request: RequestHeader): Result
 
 }
 
@@ -186,7 +186,7 @@ class UserRequest[A](val user: UserType, request: Request[A]) extends WrappedReq
  */
 case class Ajax[A](action: Action[A])(implicit secure: Secure) extends Action[A] {
 
-	def apply(request: Request[A]): Future[SimpleResult] = {
+	def apply(request: Request[A]): Future[Result] = {
 		secure.isAjax(request) match {
 			case true => action(request)
 			case _ => Future.successful(secure.badRequest(request))
@@ -200,7 +200,7 @@ case class Ajax[A](action: Action[A])(implicit secure: Secure) extends Action[A]
  * Authorization action using ActionBuilder. Use controller global configuration.
  */
 class Auth(implicit secure: Secure) extends ActionBuilder[AuthenticatedRequest] {
-	protected def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[SimpleResult]): Future[SimpleResult] = {
+	def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]): Future[Result] = {
 		secure.userInfo(request).fold(Future.successful(secure.onUnauthorized(request)))(user => {
 			block(new AuthenticatedRequest(user, request))
 		})
@@ -208,7 +208,7 @@ class Auth(implicit secure: Secure) extends ActionBuilder[AuthenticatedRequest] 
 }
 
 class AuthUser[UserType](function: (Request[_]) => Either[ServiceError, UserType])(implicit secure: Secure) extends ActionBuilder[UserRequest] {
-	protected def invokeBlock[A](request: Request[A], block: (UserRequest[A]) => Future[SimpleResult]): Future[SimpleResult] = {
+	def invokeBlock[A](request: Request[A], block: (UserRequest[A]) => Future[Result]): Future[Result] = {
 		function.apply(request) match {
 			case Left(ko) => Future.successful(secure.onUnauthorized(request).flashing("error" -> ko.error))
 			case Right(ok) => block(new UserRequest(UserType(ok), request))
@@ -217,7 +217,7 @@ class AuthUser[UserType](function: (Request[_]) => Either[ServiceError, UserType
 }
 
 class AuthCSRF(implicit secure: Secure, manager: CSRFManager) extends Auth {
-	override protected def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[SimpleResult]): Future[SimpleResult] = {
+	override def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]): Future[Result] = {
 		secure.userInfo(request).fold(Future.successful(secure.onUnauthorized(request)))(user => {
 			if (request.headers.get(SecureConstants.Token.toString) == Some(manager.hash(user))) {
 				block(new AuthenticatedRequest(user, request))
@@ -229,7 +229,7 @@ class AuthCSRF(implicit secure: Secure, manager: CSRFManager) extends Auth {
 }
 
 class AuthUserCSRF[UserType](function: (Request[_]) => Either[ServiceError, UserType])(implicit secure: Secure, manager: CSRFManager) extends AuthUser[UserType](function) {
-	override protected def invokeBlock[A](request: Request[A], block: (UserRequest[A]) => Future[SimpleResult]): Future[SimpleResult] = {
+	override def invokeBlock[A](request: Request[A], block: (UserRequest[A]) => Future[Result]): Future[Result] = {
 		function.apply(request) match {
 			case Left(ko) => Future.successful(secure.onUnauthorized(request).flashing("error" -> ko.error))
 			case Right(ok) =>
@@ -249,26 +249,26 @@ class AuthUserCSRF[UserType](function: (Request[_]) => Either[ServiceError, User
  * The same authorization action like Auth but for ajax requests.
  */
 class AuthAjax(implicit secure: Secure) extends Auth {
-	override protected def composeAction[A](action: Action[A]): Action[A] = new Ajax[A](action)
+	override def composeAction[A](action: Action[A]): Action[A] = new Ajax[A](action)
 }
 
 class AuthAjaxCSRF(implicit secure: Secure, manager: CSRFManager) extends AuthCSRF {
-	override protected def composeAction[A](action: Action[A]): Action[A] = new Ajax[A](action)
+	override def composeAction[A](action: Action[A]): Action[A] = new Ajax[A](action)
 }
 
 class AuthAjaxUser[UserType](function: (Request[_]) => Either[ServiceError, UserType])(implicit secure: Secure) extends AuthUser[UserType](function) {
-	override protected def composeAction[A](action: Action[A]): Action[A] = new Ajax[A](action)
+	override def composeAction[A](action: Action[A]): Action[A] = new Ajax[A](action)
 }
 
 class AuthAjaxUserCSRF[UserType](function: (Request[_]) => Either[ServiceError, UserType])(implicit secure: Secure, manager: CSRFManager) extends AuthUserCSRF[UserType](function) {
-	override protected def composeAction[A](action: Action[A]): Action[A] = new Ajax[A](action)
+	override def composeAction[A](action: Action[A]): Action[A] = new Ajax[A](action)
 }
 
 /**
  * Action for not authorized actions. Use controller global configuration
  */
 class NotAuth(implicit secure: Secure) extends ActionBuilder[Request] {
-	protected def invokeBlock[A](request: Request[A], block: (Request[A]) => Future[SimpleResult]): Future[SimpleResult] = {
+	def invokeBlock[A](request: Request[A], block: (Request[A]) => Future[Result]): Future[Result] = {
 		secure.userInfo(request) match {
 			case Some(_) => Future.successful(secure.notOnUnauthorized(request))
 			case _ => block(request)
@@ -280,7 +280,7 @@ class NotAuth(implicit secure: Secure) extends ActionBuilder[Request] {
  * The same not authorization action like NotAuth but for ajax requests.
  */
 class NotAuthAjax(implicit secure: Secure) extends NotAuth {
-	override protected def composeAction[A](action: Action[A]): Action[A] = new Ajax[A](action)
+	override def composeAction[A](action: Action[A]): Action[A] = new Ajax[A](action)
 }
 
 /**

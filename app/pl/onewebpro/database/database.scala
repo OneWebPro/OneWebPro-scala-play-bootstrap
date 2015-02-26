@@ -1,56 +1,15 @@
 package pl.onewebpro.database
 
-import play.api.db.slick.DB
-import play.api.db.slick.Config.driver.simple._
 import play.api.Play.current
-import scala.slick.jdbc.JdbcBackend
-import scalaz.{Success, Failure, Validation}
-import scala.slick.lifted.CanBeQueryCondition
-import play.mvc.Http.Status
-import play.api.mvc.{SimpleResult, Results}
+import play.api.db.slick.Config.driver.simple._
+import play.api.db.slick.DB
 import play.api.http.Status._
-import scalaz.Failure
-import scala.Some
-import scalaz.Success
 import play.api.libs.json.Json
+import play.api.mvc.{Result,Results}
+
 import scala.concurrent.Future
-
-/**
- * @author loki
- */
-
-/**
- * Class for filtering data in slick.
- */
-case class MaybeFilter[X, Y](query: scala.slick.lifted.Query[X, Y]) {
-	def filter[T, R: CanBeQueryCondition](data: Option[T])(f: T => X => R) = {
-		data.fold(this)(v => MaybeFilter(query.filter(f(v))))
-	}
-
-	def filterIf[T, R: CanBeQueryCondition](data: T)(is: T => Boolean)(f: T => X => R) = {
-		if (is(data)) {
-			MaybeFilter(query.filter(f(data)))
-		} else {
-			this
-		}
-	}
-
-	def filterIfIs[T, R: CanBeQueryCondition](data: T)(ifWhat: T)(f: T => X => R) = {
-		if (ifWhat == data) {
-			MaybeFilter(query.filter(f(data)))
-		} else {
-			this
-		}
-	}
-
-	def filterIfNot[T, R: CanBeQueryCondition](data: T)(ifWhat: T)(f: T => X => R) = {
-		if (ifWhat != data) {
-			MaybeFilter(query.filter(f(data)))
-		} else {
-			this
-		}
-	}
-}
+import scala.slick.jdbc.JdbcBackend
+import scalaz.{Failure, Success, Validation}
 
 /**
  * Service object trait
@@ -150,13 +109,13 @@ trait ErrorService {
  * @param error String
  */
 case class ServiceError(error: String, code: Int = UNPROCESSABLE_ENTITY) {
-	def toJsonResult: SimpleResult = new Results.Status(code).apply(
+	def toJsonResult: Result = new Results.Status(code).apply(
 		Json.obj(
 			"error" -> error
 		)
 	)
 
-	def toFutureJsonResult: Future[SimpleResult] = Future.successful(toJsonResult)
+	def toFutureJsonResult: Future[Result] = Future.successful(toJsonResult)
 }
 
 /**
@@ -247,7 +206,7 @@ abstract class Mapper[T <: Entity[T]](tag: Tag, table: String) extends Table[T](
 
 	def findAll()(implicit s: Session): List[T] = (for {
 		e <- self
-	} yield e).list()
+	} yield e).list
 
 	/**
 	 * Query searching by id field
