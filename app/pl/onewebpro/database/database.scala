@@ -289,6 +289,8 @@ abstract class Mapper[T <: Entity[T]](tag: Tag, table: String) extends Table[T](
  * DAO trait is trait that help implements all default methods from database.Mapper
  */
 trait DatabaseDAO[Element <: Entity[Element]] {
+  val table: Element
+
 	/**
 	 * Element of DAO
 	 */
