@@ -6,7 +6,7 @@ import PlayKeys._
 object ApplicationBuild extends Build {
 
   val appName = "OneWebPro-scala-play-bootstrap"
-  val appVersion = "1.1.0"
+  val appVersion = "1.1.1"
 
   val appDependencies = Seq(
     "com.typesafe.slick" %% "slick" % "2.1.0",
