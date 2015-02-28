@@ -13,7 +13,7 @@ object ApplicationBuild extends Build {
     "com.typesafe.play" %% "play-slick" % "0.8.1",
     "org.imgscalr" % "imgscalr-lib" % "4.2",
     "net.coobird" % "thumbnailator" % "0.4.8",
-    "org.scalaz" %% "scalaz-core" % "7.1.1",
+    "org.scalaz" %% "scalaz-core" % "7.0.7",
     "org.mindrot" % "jbcrypt" % "0.3m"
   )
 
