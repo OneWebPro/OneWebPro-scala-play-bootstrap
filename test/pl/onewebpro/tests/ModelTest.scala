@@ -1,11 +1,10 @@
 package pl.onewebpro.tests
 
+import dao._
 import org.specs2.mutable._
 import play.api.db.slick.Config.driver.simple._
-import scala.slick.jdbc.meta.MTable
-import dao._
-import tables._
 import services.TestService
+import tables._
 
 /**
  * @author loki
